@@ -2,14 +2,28 @@ var http = require("http");
 var url = require("url");
 
 function start(route, handle) {
-  var server = http.createServer(function(request, response) {
-    var pathname = url.parse(request.url).pathname;
-		console.log("Request for " + pathname + " received.");
+	function onRequest(request, response) {
+		var postData = "";
+		var pathname = url.parse(request.url).pathname;
+		console.log("Request for " + pathname + " receieved.");
 		
-    route(handle, pathname, response);
-  });
+		request.setEncoding("utf8");
+		
+		request.addListener("data", function(postDataChunk) {
+			postData +=postDataChunk;
+			console.log(" ------------------------------------------- ");
+			console.log("Received POST data chunk '" + postDataChunk + "'.");
+			console.log(" ------------------------------------------- ");
+		});
+		
+		request.addListener("end", function() {
+			console.log("End -------");
+			route (handle, pathname, response, postData);
+		});
+	
+	}
 
-  server.listen(8080);
+  http.createServer(onRequest).listen(8888);
   console.log("server has started.");
 }
 
